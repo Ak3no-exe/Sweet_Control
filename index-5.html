@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sweet_Control</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B0F19">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sweet_Control">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F19;
+    --bg-alt:#131826;
+    --card:#171d2e;
+    --border:#232c42;
+    --text:#E9ECF5;
+    --text-dim:#8b93ab;
+    --accent:#7C5CFC;
+    --accent-2:#3ED6C0;
+    --danger:#ff5c7a;
+  }
+  [data-theme="light"]{
+    --bg:#F3F4F9;
+    --bg-alt:#FFFFFF;
+    --card:#FFFFFF;
+    --border:#DDE1EE;
+    --text:#171d2e;
+    --text-dim:#5c6478;
+    --accent:#6A4DF0;
+    --accent-2:#0FA98F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .2s,color .2s;}
+  h1,h2,h3,.brand,.tabbtn,.rankbadge .val{font-family:'Rajdhani',sans-serif;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select{font-family:inherit;}
+
+  /* ---------- LOGIN ---------- */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:22px;overflow:hidden;}
+  .login-title{font-family:'Rajdhani',sans-serif;font-size:2.2rem;font-weight:700;letter-spacing:1px;}
+  .login-title span{color:var(--accent);}
+
+  .swipe-wrap{width:240px;max-width:80vw;overflow:hidden;touch-action:pan-y;}
+  .swipe-track{display:flex;width:200%;}
+  .swipe-slide{width:50%;flex-shrink:0;display:flex;justify-content:center;padding:0 6px;}
+
+  .account-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:100%;text-align:center;transition:border-color .15s;user-select:none;}
+  .account-card:hover{border-color:var(--accent);}
+  .account-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:#fff;overflow:hidden;pointer-events:none;}
+  .account-avatar img{width:100%;height:100%;object-fit:cover;}
+  .account-name{font-weight:600;margin-bottom:14px;}
+  .account-card input[type=password]{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-alt);color:var(--text);margin-bottom:10px;}
+  .account-card button{width:100%;padding:8px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-weight:600;}
+  .login-error{color:var(--danger);font-size:.85rem;min-height:1.2em;}
+
+  .swipe-dots{display:flex;gap:8px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .15s,transform .15s;}
+  .dot.active{background:var(--accent);transform:scale(1.2);}
+  .swipe-hint{font-size:.8rem;color:var(--text-dim);}
+
+  /* ---------- APP ---------- */
+  #app{display:none;min-height:100vh;}
+  header{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg-alt);position:sticky;top:0;z-index:20;}
+  #hamburger{width:38px;height:38px;border:1px solid var(--border);background:var(--card);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
+  #hamburger span{width:18px;height:2px;background:var(--text);border-radius:2px;}
+  .brand{font-size:1.3rem;font-weight:700;letter-spacing:.5px;}
+  .brand span{color:var(--accent);}
+  .header-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+  .mini-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;overflow:hidden;font-size:.9rem;}
+  .mini-avatar img{width:100%;height:100%;object-fit:cover;}
+
+  /* dropdown menu */
+  #menu-panel{position:fixed;top:64px;left:16px;width:230px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.35);display:none;flex-direction:column;overflow:hidden;z-index:30;}
+  #menu-panel button{background:none;border:none;color:var(--text);text-align:left;padding:13px 16px;font-size:.95rem;display:flex;gap:10px;align-items:center;}
+  #menu-panel button:hover{background:var(--bg-alt);}
+  #menu-panel button.danger{color:var(--danger);}
+  #menu-panel hr{border:none;border-top:1px solid var(--border);margin:0;}
+
+  main{max-width:960px;margin:0 auto;padding:24px 20px 60px;}
+  .tabs{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+  .tabbtn{padding:10px 20px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text-dim);font-weight:600;font-size:1rem;}
+  .tabbtn.active{color:#fff;background:var(--accent);border-color:var(--accent);}
+
+  .section{display:none;}
+  .section.active{display:block;}
+
+  .add-player{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .add-player input{flex:1;min-width:160px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);}
+  .add-player button{padding:10px 18px;border-radius:8px;border:none;background:var(--accent-2);color:#04231d;font-weight:700;}
+
+  .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+  .player-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0;position:relative;overflow:hidden;}
+  .player-card .pname{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.2rem;padding:16px 44px 16px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none;}
+  .player-card .pname .chevron{margin-left:auto;font-size:.9rem;color:var(--text-dim);transition:transform .2s;flex-shrink:0;}
+  .player-card.open .pname .chevron{transform:rotate(180deg);}
+  .owner-badge{font-family:'Inter',sans-serif;font-size:.65rem;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--bg-alt);color:var(--text-dim);border:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+  .owner-badge.mine{color:var(--accent-2);border-color:var(--accent-2);}
+  .player-card .del{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text-dim);font-size:1.1rem;}
+  .player-card .del:hover{color:var(--danger);}
+  .player-body{display:none;padding:0 18px 18px;}
+  .player-card.open .player-body{display:block;}
+  .rank-row{margin-bottom:12px;}
+  .rank-row label{display:block;font-size:.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+  .rank-row select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-alt);color:var(--text);}
+  .rank-row select:disabled{opacity:.6;cursor:not-allowed;}
+  .peak-note{font-size:.7rem;color:var(--accent-2);margin-top:2px;}
+  .empty{color:var(--text-dim);font-size:.9rem;padding:30px 0;text-align:center;}
+
+  /* profil / paramètres panels */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:40;}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;width:320px;max-width:90vw;}
+  .modal h3{margin-top:0;}
+  .modal label{display:block;font-size:.8rem;color:var(--text-dim);margin:14px 0 6px;}
+  .modal input[type=text]{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-alt);color:var(--text);}
+  .modal .avatar-preview{width:80px;height:80px;border-radius:50%;margin:0 auto;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;overflow:hidden;}
+  .modal .avatar-preview img{width:100%;height:100%;object-fit:cover;}
+  .theme-choice{display:flex;gap:10px;margin-top:14px;}
+  .theme-choice button{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-alt);color:var(--text);}
+  .theme-choice button.selected{border-color:var(--accent);color:var(--accent);font-weight:700;}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;}
+  .modal-actions button{flex:1;padding:10px;border-radius:8px;border:none;font-weight:700;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-secondary{background:var(--bg-alt);color:var(--text);border:1px solid var(--border) !important;}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <div class="login-title">SWEET<span>_CONTROL</span></div>
+  <div class="swipe-wrap" id="swipeWrap">
+    <div class="swipe-track" id="swipeTrack"></div>
+  </div>
+  <div class="swipe-dots" id="swipeDots">
+    <span class="dot" data-idx="0"></span>
+    <span class="dot" data-idx="1"></span>
+  </div>
+  <div class="swipe-hint">← glisse pour changer de compte →</div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <header>
+    <button id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+    <div class="brand">SWEET<span>_CONTROL</span></div>
+    <div class="header-right">
+      <div class="mini-avatar" id="headerAvatar"></div>
+    </div>
+  </header>
+
+  <div id="menu-panel">
+    <button onclick="openProfil()">👤 Profil</button>
+    <hr>
+    <button onclick="openParametres()">⚙️ Paramètres</button>
+    <hr>
+    <button onclick="openApi()">🔑 API</button>
+    <hr>
+    <button class="danger" onclick="logout()">🚪 Déconnexion</button>
+  </div>
+
+  <main>
+    <div class="tabs">
+      <button class="tabbtn active" data-tab="fortnite" onclick="switchTab('fortnite')">Fortnite</button>
+      <button class="tabbtn" data-tab="rl" onclick="switchTab('rl')">Rocket League Sideswipe</button>
+    </div>
+
+    <!-- FORTNITE -->
+    <section id="tab-fortnite" class="section active">
+      <div class="add-player">
+        <input type="text" id="fnName" placeholder="Nom du joueur">
+        <button onclick="addFortnitePlayer()">+ Créer un joueur</button>
+      </div>
+      <div class="players-grid" id="fnGrid"></div>
+    </section>
+
+    <!-- ROCKET LEAGUE -->
+    <section id="tab-rl" class="section">
+      <div class="add-player">
+        <input type="text" id="rlName" placeholder="Nom du joueur">
+        <button onclick="addRLPlayer()">+ Créer un joueur</button>
+      </div>
+      <div class="players-grid" id="rlGrid"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= PROFIL MODAL ================= -->
+<div class="overlay" id="overlayProfil">
+  <div class="modal">
+    <h3>Profil</h3>
+    <div class="avatar-preview" id="profilAvatarPreview"></div>
+    <label>Photo de profil</label>
+    <input type="file" id="profilFile" accept="image/*">
+    <label>Pseudo</label>
+    <input type="text" id="profilPseudo">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeOverlay('overlayProfil')">Annuler</button>
+      <button class="btn-primary" onclick="saveProfil()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PARAMETRES MODAL ================= -->
+<div class="overlay" id="overlayParams">
+  <div class="modal">
+    <h3>Paramètres</h3>
+    <label>Thème du dashboard</label>
+    <div class="theme-choice">
+      <button id="btnThemeDark" onclick="setThemeChoice('dark')">Sombre</button>
+      <button id="btnThemeLight" onclick="setThemeChoice('light')">Clair</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeOverlay('overlayParams')">Annuler</button>
+      <button class="btn-primary" onclick="saveParams()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= API MODAL ================= -->
+<div class="overlay" id="overlayApi">
+  <div class="modal">
+    <h3>Connexion API (JSONBin)</h3>
+    <label>Clé API (X-Master-Key)</label>
+    <input type="text" id="apiMasterKey" placeholder="Colle ta X-Master-Key ici">
+    <label>ID du Bin</label>
+    <input type="text" id="apiBinId" placeholder="Clique sur Créer, ou colle un ID existant">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="createNewBin()">Créer un nouveau Bin</button>
+    </div>
+    <div class="login-error" id="apiError"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeOverlay('overlayApi')">Annuler</button>
+      <button class="btn-primary" onclick="saveApiConfig()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== DONNEES (en mémoire pour cette session) ===================== */
+const TIERS_FN = ['Bronze','Argent','Or','Platine','Diamant','Élite','Champion'];
+const TIERS_RL = ['Bronze','Argent','Or','Platine','Diamant','Champion','Grand Champion'];
+const DIVISIONS = ['I','II','III'];
+
+function buildRanks(tiers, topLabel){
+  const out = [];
+  tiers.forEach(t => DIVISIONS.forEach(d => out.push(t+' '+d)));
+  out.push(topLabel);
+  return out;
+}
+const FN_RANKS = buildRanks(TIERS_FN, 'Unreal');
+const RL_RANKS = buildRanks(TIERS_RL, 'Légende Supersonique');
+
+const DEFAULT_ACCOUNTS = {
+  Leo:    { display:'Léo',    password:'leo2026',    avatar:null, theme:'dark', fortnite:[], rl:[] },
+  Matteo: { display:'Matteo', password:'matteo2026', avatar:null, theme:'dark', fortnite:[], rl:[] }
+};
+let accounts = JSON.parse(JSON.stringify(DEFAULT_ACCOUNTS));
+let currentUser = null;
+let pendingThemeChoice = 'dark';
+let uid = 1;
+
+/* ===================== SAUVEGARDE PARTAGEE (JSONBin - fonctionne sur tout appareil/navigateur) ===================== */
+const JSONBIN_DEFAULT = {
+  masterKey: '$2a$10$4nKrYmBk7wMx3sx2fw.j1.3u/pGYqYPGufVqboXeHI6BkWO5.JKSe',
+  binId: '6a917a8ff5f4af5e294da52b'
+};
+function getApiConfig(){
+  try{
+    const stored = localStorage.getItem('sc_api_config');
+    if(stored){
+      const parsed = JSON.parse(stored);
+      return {
+        masterKey: parsed.masterKey || JSONBIN_DEFAULT.masterKey,
+        binId: parsed.binId || JSONBIN_DEFAULT.binId
+      };
+    }
+  } catch(e){}
+  return { ...JSONBIN_DEFAULT };
+}
+function setApiConfig(cfg){
+  try{ localStorage.setItem('sc_api_config', JSON.stringify(cfg)); } catch(e){}
+}
+
+async function loadAccountsFromServer(){
+  const cfg = getApiConfig();
+  if(!cfg.binId) return; // pas encore configuré, voir le bouton API du menu
+  try{
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`, {
+      headers: { 'X-Master-Key': cfg.masterKey, 'X-Bin-Meta': 'false' }
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    if(data && data.accounts){
+      accounts = data.accounts;
+      uid = data.uid || 1;
+    }
+  } catch(err){
+    console.error('Erreur de chargement JSONBin', err);
+  }
+}
+async function saveAccountsToServer(){
+  const cfg = getApiConfig();
+  if(!cfg.binId) return;
+  try{
+    await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': cfg.masterKey },
+      body: JSON.stringify({ accounts, uid })
+    });
+  } catch(err){
+    console.error('Erreur de sauvegarde JSONBin', err);
+  }
+}
+
+/* ===================== PANNEAU API ===================== */
+function openApi(){
+  closeMenu();
+  const cfg = getApiConfig();
+  document.getElementById('apiMasterKey').value = cfg.masterKey || '';
+  document.getElementById('apiBinId').value = cfg.binId || '';
+  document.getElementById('apiError').textContent = '';
+  document.getElementById('overlayApi').style.display = 'flex';
+}
+async function createNewBin(){
+  const errEl = document.getElementById('apiError');
+  errEl.textContent = '';
+  const masterKey = document.getElementById('apiMasterKey').value.trim();
+  if(!masterKey){ errEl.textContent = 'Renseigne la clé API d\'abord.'; return; }
+  try{
+    const res = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': masterKey,
+        'X-Bin-Name': 'Sweet_Control'
+      },
+      body: JSON.stringify({ accounts, uid })
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    document.getElementById('apiBinId').value = data.metadata.id;
+  } catch(err){
+    errEl.textContent = 'Erreur de création du bin — vérifie la clé API.';
+  }
+}
+async function saveApiConfig(){
+  const masterKey = document.getElementById('apiMasterKey').value.trim();
+  const binId = document.getElementById('apiBinId').value.trim();
+  if(!binId){ document.getElementById('apiError').textContent = 'Renseigne ou crée un ID de Bin.'; return; }
+  setApiConfig({ masterKey, binId });
+  closeOverlay('overlayApi');
+  await loadAccountsFromServer();
+  if(currentUser){ renderAll(); } else { renderLogin(); }
+}
+
+/* ===================== RAFRAICHISSEMENT AUTO (toutes les 5s) ===================== */
+let refreshTimer = null;
+function startAutoRefresh(){
+  if(refreshTimer) return;
+  refreshTimer = setInterval(pollRefresh, 30000);
+}
+async function pollRefresh(){
+  await loadAccountsFromServer();
+  if(currentUser){
+    const profilOpen = document.getElementById('overlayProfil').style.display === 'flex';
+    const paramsOpen = document.getElementById('overlayParams').style.display === 'flex';
+    if(!profilOpen && !paramsOpen){
+      renderAll();
+    }
+  } else {
+    refreshLoginAvatars();
+  }
+}
+function refreshLoginAvatars(){
+  LOGIN_ORDER.forEach((key, i)=>{
+    const acc = accounts[key];
+    if(!acc) return;
+    const avatarEl = document.getElementById('loginAvatar-'+key);
+    if(avatarEl) avatarEl.innerHTML = acc.avatar ? `<img src="${acc.avatar}">` : acc.display[0];
+    const slide = document.querySelectorAll('#swipeTrack .swipe-slide')[i];
+    if(slide){
+      const nameEl = slide.querySelector('.account-name');
+      if(nameEl) nameEl.textContent = acc.display;
+    }
+  });
+}
+
+/* ===================== LOGIN (carrousel swipeable) ===================== */
+const LOGIN_ORDER = ['Leo','Matteo']; // slide 0 = Léo (swipe droite), slide 1 = Matteo (swipe gauche)
+let loginIndex = 0;
+let loginDragging = false;
+let loginStartX = 0;
+let loginDeltaX = 0;
+
+function renderLogin(){
+  const track = document.getElementById('swipeTrack');
+  track.innerHTML = LOGIN_ORDER.map(key=>{
+    const acc = accounts[key];
+    return `
+      <div class="swipe-slide">
+        <div class="account-card">
+          <div class="account-avatar" id="loginAvatar-${key}">${acc.avatar ? `<img src="${acc.avatar}">` : acc.display[0]}</div>
+          <div class="account-name">${acc.display}</div>
+          <input type="password" placeholder="Mot de passe" id="pwd-${key}">
+          <button onclick="tryLogin('${key}')">Se connecter</button>
+          <div class="login-error" id="err-${key}"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  goToLoginSlide(0, false);
+  setupSwipeHandlers();
+}
+
+function goToLoginSlide(idx, animate=true){
+  loginIndex = idx;
+  const track = document.getElementById('swipeTrack');
+  track.style.transition = animate ? 'transform .3s ease' : 'none';
+  track.style.transform = `translateX(-${idx*50}%)`;
+  document.querySelectorAll('#swipeDots .dot').forEach((d,i)=>d.classList.toggle('active', i===idx));
+}
+
+document.getElementById('swipeDots').addEventListener('click', (e)=>{
+  if(e.target.classList.contains('dot')){
+    goToLoginSlide(parseInt(e.target.dataset.idx));
+  }
+});
+
+function setupSwipeHandlers(){
+  const wrap = document.getElementById('swipeWrap');
+  const track = document.getElementById('swipeTrack');
+  if(wrap.dataset.bound) return; // n'attacher qu'une fois
+  wrap.dataset.bound = '1';
+
+  wrap.addEventListener('pointerdown', (e)=>{
+    loginDragging = true;
+    loginStartX = e.clientX;
+    loginDeltaX = 0;
+    track.style.transition = 'none';
+  });
+  window.addEventListener('pointermove', (e)=>{
+    if(!loginDragging) return;
+    loginDeltaX = e.clientX - loginStartX;
+    const base = -loginIndex*50;
+    const wrapWidth = wrap.offsetWidth;
+    const percent = base + (loginDeltaX / wrapWidth) * 50;
+    track.style.transform = `translateX(${percent}%)`;
+  });
+  window.addEventListener('pointerup', ()=>{
+    if(!loginDragging) return;
+    loginDragging = false;
+    const threshold = 45;
+    if(loginDeltaX > threshold && loginIndex > 0){
+      goToLoginSlide(loginIndex - 1); // glisser vers la droite -> Léo (slide précédent)
+    } else if(loginDeltaX < -threshold && loginIndex < LOGIN_ORDER.length - 1){
+      goToLoginSlide(loginIndex + 1); // glisser vers la gauche -> Matteo (slide suivant)
+    } else {
+      goToLoginSlide(loginIndex);
+    }
+    loginDeltaX = 0;
+  });
+}
+
+function saveSession(key){
+  try{ localStorage.setItem('sc_session', key); } catch(e){}
+}
+function clearSession(){
+  try{ localStorage.removeItem('sc_session'); } catch(e){}
+}
+function getSavedSession(){
+  try{ return localStorage.getItem('sc_session'); } catch(e){ return null; }
+}
+
+function tryLogin(key){
+  const val = document.getElementById('pwd-'+key).value;
+  if(val === accounts[key].password){
+    currentUser = key;
+    saveSession(key);
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    applyTheme(accounts[key].theme);
+    renderAll();
+  } else {
+    document.getElementById('err-'+key).textContent = 'Mot de passe incorrect';
+  }
+}
+
+function logout(){
+  closeMenu();
+  currentUser = null;
+  clearSession();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login').style.display = 'flex';
+  Object.keys(accounts).forEach(k=>{
+    document.getElementById('pwd-'+k).value = '';
+    document.getElementById('err-'+k).textContent = '';
+  });
+  goToLoginSlide(0, false);
+}
+
+/* ===================== MENU HAMBURGER ===================== */
+function toggleMenu(){
+  const m = document.getElementById('menu-panel');
+  m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+}
+function closeMenu(){ document.getElementById('menu-panel').style.display = 'none'; }
+document.addEventListener('click', (e)=>{
+  const m = document.getElementById('menu-panel');
+  if(m.style.display==='flex' && !m.contains(e.target) && e.target.id!=='hamburger' && !e.target.closest('#hamburger')){
+    closeMenu();
+  }
+});
+
+/* ===================== PROFIL ===================== */
+function openProfil(){
+  closeMenu();
+  const acc = accounts[currentUser];
+  document.getElementById('profilPseudo').value = acc.display;
+  const prev = document.getElementById('profilAvatarPreview');
+  prev.innerHTML = acc.avatar ? `<img src="${acc.avatar}">` : acc.display[0];
+  document.getElementById('profilFile').value = '';
+  document.getElementById('overlayProfil').style.display = 'flex';
+}
+document.getElementById('profilFile').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    document.getElementById('profilAvatarPreview').innerHTML = `<img src="${ev.target.result}">`;
+    document.getElementById('profilFile').dataset.result = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+function saveProfil(){
+  const acc = accounts[currentUser];
+  acc.display = document.getElementById('profilPseudo').value.trim() || acc.display;
+  const newAvatar = document.getElementById('profilFile').dataset.result;
+  if(newAvatar) acc.avatar = newAvatar;
+  closeOverlay('overlayProfil');
+  renderHeaderAvatar();
+  refreshLoginAvatars();
+  saveAccountsToServer();
+}
+
+/* ===================== PARAMETRES ===================== */
+function openParametres(){
+  closeMenu();
+  pendingThemeChoice = accounts[currentUser].theme;
+  updateThemeButtons();
+  document.getElementById('overlayParams').style.display = 'flex';
+}
+function setThemeChoice(t){ pendingThemeChoice = t; updateThemeButtons(); }
+function updateThemeButtons(){
+  document.getElementById('btnThemeDark').classList.toggle('selected', pendingThemeChoice==='dark');
+  document.getElementById('btnThemeLight').classList.toggle('selected', pendingThemeChoice==='light');
+}
+function saveParams(){
+  accounts[currentUser].theme = pendingThemeChoice;
+  applyTheme(pendingThemeChoice);
+  closeOverlay('overlayParams');
+  saveAccountsToServer();
+}
+function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); }
+function closeOverlay(id){ document.getElementById(id).style.display = 'none'; }
+
+/* ===================== HEADER AVATAR ===================== */
+function renderHeaderAvatar(){
+  const acc = accounts[currentUser];
+  const el = document.getElementById('headerAvatar');
+  el.innerHTML = acc.avatar ? `<img src="${acc.avatar}">` : acc.display[0];
+}
+
+/* ===================== TABS ===================== */
+function switchTab(name){
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  document.getElementById('tab-fortnite').classList.toggle('active', name==='fortnite');
+  document.getElementById('tab-rl').classList.toggle('active', name==='rl');
+}
+
+/* ===================== OPTIONS HTML ===================== */
+function rankOptions(list, selected){
+  return list.map(r=>`<option value="${r}" ${r===selected?'selected':''}>${r}</option>`).join('');
+}
+
+/* ===================== FORTNITE ===================== */
+function addFortnitePlayer(){
+  const input = document.getElementById('fnName');
+  const name = input.value.trim();
+  if(!name) return;
+  accounts[currentUser].fortnite.push({
+    id: uid++, name,
+    br: FN_RANKS[0], brPeak: FN_RANKS[0],
+    recharge: FN_RANKS[0], rechargePeak: FN_RANKS[0]
+  });
+  input.value = '';
+  renderFortnite();
+  saveAccountsToServer();
+}
+function findFortnitePlayer(id){
+  for(const key of Object.keys(accounts)){
+    const p = accounts[key].fortnite.find(pl=>pl.id===id);
+    if(p) return { owner:key, player:p };
+  }
+  return null;
+}
+function removeFortnitePlayer(id){
+  const found = findFortnitePlayer(id);
+  if(!found || found.owner!==currentUser) return; // on ne supprime que ses propres joueurs
+  accounts[found.owner].fortnite = accounts[found.owner].fortnite.filter(p=>p.id!==id);
+  renderFortnite();
+  saveAccountsToServer();
+}
+function updateFortnite(id, field, value){
+  const found = findFortnitePlayer(id);
+  if(!found || found.owner!==currentUser) return; // on ne modifie que ses propres joueurs
+  found.player[field] = value;
+  saveAccountsToServer();
+}
+function togglePlayerCard(cardId){
+  const el = document.getElementById(cardId);
+  if(el) el.classList.toggle('open');
+}
+function renderFortnite(){
+  const grid = document.getElementById('fnGrid');
+  const allPlayers = [];
+  Object.keys(accounts).forEach(key=>{
+    accounts[key].fortnite.forEach(p=>allPlayers.push({ ...p, owner:key }));
+  });
+  if(allPlayers.length===0){ grid.innerHTML = '<div class="empty">Aucun joueur pour le moment — crée ton premier joueur Fortnite.</div>'; return; }
+  grid.innerHTML = allPlayers.map(p=>{
+    const isMine = p.owner === currentUser;
+    const ownerName = accounts[p.owner].display;
+    const cardId = 'fn-card-'+p.id;
+    const dis = isMine ? '' : 'disabled';
+    return `
+    <div class="player-card" id="${cardId}">
+      ${isMine ? `<button class="del" onclick="removeFortnitePlayer(${p.id})">✕</button>` : ''}
+      <div class="pname" onclick="togglePlayerCard('${cardId}')">
+        ${p.name}
+        <span class="owner-badge ${isMine?'mine':''}">${ownerName}</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="player-body">
+        <div class="rank-row">
+          <label>Rang Battle Royale</label>
+          <select ${dis} onchange="updateFortnite(${p.id},'br',this.value)">${rankOptions(FN_RANKS,p.br)}</select>
+        </div>
+        <div class="rank-row">
+          <label>Peak Battle Royale</label>
+          <select ${dis} onchange="updateFortnite(${p.id},'brPeak',this.value)">${rankOptions(FN_RANKS,p.brPeak)}</select>
+          <div class="peak-note">Meilleur rang jamais atteint</div>
+        </div>
+        <div class="rank-row">
+          <label>Rang Recharge</label>
+          <select ${dis} onchange="updateFortnite(${p.id},'recharge',this.value)">${rankOptions(FN_RANKS,p.recharge)}</select>
+        </div>
+        <div class="rank-row">
+          <label>Peak Recharge</label>
+          <select ${dis} onchange="updateFortnite(${p.id},'rechargePeak',this.value)">${rankOptions(FN_RANKS,p.rechargePeak)}</select>
+          <div class="peak-note">Meilleur rang jamais atteint</div>
+        </div>
+      </div>
+    </div>
+  `;}).join('');
+}
+
+/* ===================== ROCKET LEAGUE SIDESWIPE ===================== */
+function addRLPlayer(){
+  const input = document.getElementById('rlName');
+  const name = input.value.trim();
+  if(!name) return;
+  accounts[currentUser].rl.push({
+    id: uid++, name,
+    r1v1: RL_RANKS[0], r1v1Peak: RL_RANKS[0],
+    r2v2: RL_RANKS[0], r2v2Peak: RL_RANKS[0]
+  });
+  input.value = '';
+  renderRL();
+  saveAccountsToServer();
+}
+function findRLPlayer(id){
+  for(const key of Object.keys(accounts)){
+    const p = accounts[key].rl.find(pl=>pl.id===id);
+    if(p) return { owner:key, player:p };
+  }
+  return null;
+}
+function removeRLPlayer(id){
+  const found = findRLPlayer(id);
+  if(!found || found.owner!==currentUser) return; // on ne supprime que ses propres joueurs
+  accounts[found.owner].rl = accounts[found.owner].rl.filter(p=>p.id!==id);
+  renderRL();
+  saveAccountsToServer();
+}
+function updateRL(id, field, value){
+  const found = findRLPlayer(id);
+  if(!found || found.owner!==currentUser) return; // on ne modifie que ses propres joueurs
+  found.player[field] = value;
+  saveAccountsToServer();
+}
+function renderRL(){
+  const grid = document.getElementById('rlGrid');
+  const allPlayers = [];
+  Object.keys(accounts).forEach(key=>{
+    accounts[key].rl.forEach(p=>allPlayers.push({ ...p, owner:key }));
+  });
+  if(allPlayers.length===0){ grid.innerHTML = '<div class="empty">Aucun joueur pour le moment — crée ton premier joueur Rocket League Sideswipe.</div>'; return; }
+  grid.innerHTML = allPlayers.map(p=>{
+    const isMine = p.owner === currentUser;
+    const ownerName = accounts[p.owner].display;
+    const cardId = 'rl-card-'+p.id;
+    const dis = isMine ? '' : 'disabled';
+    return `
+    <div class="player-card" id="${cardId}">
+      ${isMine ? `<button class="del" onclick="removeRLPlayer(${p.id})">✕</button>` : ''}
+      <div class="pname" onclick="togglePlayerCard('${cardId}')">
+        ${p.name}
+        <span class="owner-badge ${isMine?'mine':''}">${ownerName}</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="player-body">
+        <div class="rank-row">
+          <label>Rang 1v1</label>
+          <select ${dis} onchange="updateRL(${p.id},'r1v1',this.value)">${rankOptions(RL_RANKS,p.r1v1)}</select>
+        </div>
+        <div class="rank-row">
+          <label>Peak 1v1</label>
+          <select ${dis} onchange="updateRL(${p.id},'r1v1Peak',this.value)">${rankOptions(RL_RANKS,p.r1v1Peak)}</select>
+          <div class="peak-note">Meilleur rang jamais atteint</div>
+        </div>
+        <div class="rank-row">
+          <label>Rang 2v2</label>
+          <select ${dis} onchange="updateRL(${p.id},'r2v2',this.value)">${rankOptions(RL_RANKS,p.r2v2)}</select>
+        </div>
+        <div class="rank-row">
+          <label>Peak 2v2</label>
+          <select ${dis} onchange="updateRL(${p.id},'r2v2Peak',this.value)">${rankOptions(RL_RANKS,p.r2v2Peak)}</select>
+          <div class="peak-note">Meilleur rang jamais atteint</div>
+        </div>
+      </div>
+    </div>
+  `;}).join('');
+}
+
+/* ===================== INIT ===================== */
+function renderAll(){
+  renderHeaderAvatar();
+  renderFortnite();
+  renderRL();
+}
+async function init(){
+  document.getElementById('swipeTrack').innerHTML = '<div class="swipe-slide" style="width:100%"><div style="color:var(--text-dim);padding:40px 0;text-align:center;">Chargement...</div></div>';
+  await loadAccountsFromServer();
+  const savedKey = getSavedSession();
+  if(savedKey && accounts[savedKey]){
+    currentUser = savedKey;
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    applyTheme(accounts[savedKey].theme);
+    renderAll();
+  } else {
+    renderLogin();
+  }
+  startAutoRefresh();
+}
+init();
+
+/* ===================== PWA : ENREGISTREMENT DU SERVICE WORKER ===================== */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.error('SW error', err));
+  });
+}
+
+</script>
+</body>
+</html>
