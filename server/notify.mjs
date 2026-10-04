@@ -1,11 +1,15 @@
 import fs from 'node:fs';
 import admin from 'firebase-admin';
 
+// Valeurs écrites directement (dépôt privé uniquement !)
+const BIN_ID = '6a913440da38895dfe1b2aeb';
+const MASTER_KEY = '$2a$10$C1NDhq/quo0lnjpvMCXwGerQa/hhT6qo.3RyxqJxgZAbnNtNBEuuy';
+
 const GAMES = { fortnite: 'Fortnite', rl: 'Rocket League Sideswipe', rlstd: 'Rocket League', brawl: 'Brawl Stars' };
 const STATE = 'server/state.json';
 
-const res = await fetch(`https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}/latest`, {
-  headers: { 'X-Master-Key': process.env.JSONBIN_MASTER_KEY, 'X-Bin-Meta': 'false' }
+const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+  headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
 });
 if (!res.ok) throw new Error('jsonbin HTTP ' + res.status);
 const data = await res.json();
